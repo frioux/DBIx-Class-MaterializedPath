@@ -57,7 +57,7 @@ sub _set_materialized_path {
 sub _install_after_column_change {
    my ($self, $path_info) = @_;
 
-   for my $column ($path_info->{direct_column}, $path_info->{materialized_path_column}) {
+   for my $column (map $path_info->{$_}, qw(direct_column materialized_path_column)) {
       $self->after_column_change($column => {
          txn_wrap => 1,
 
