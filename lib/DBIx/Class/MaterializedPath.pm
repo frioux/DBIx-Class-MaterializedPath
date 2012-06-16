@@ -16,6 +16,7 @@ use Class::C3::Componentised::ApplyHooks
       for my $path (keys %mat_paths) {
          $_[0]->_install_after_column_change($mat_paths{$path});
          $_[0]->_install_full_path_rel($mat_paths{$path});
+         $_[0]->_install_reverse_full_path_rel($mat_paths{$path});
       }
    };
 
@@ -119,24 +120,36 @@ sub _install_full_path_rel {
    );
 }
 
-#__PACKAGE__->has_many
-   #$path_info->{reverse_full_path} => '::Ingredient',
-   #sub {
-      #my $args = shift;
+sub _install_reverse_full_path_rel {
+   my ($self, $path_info) = @_;
 
-      #my $path_separator = q(/);
-      #my $rest = "$path_separator%";
+   $self->has_many(
+      $path_info->{reverse_full_path} => $self,
+      sub {
+         my $args = shift;
 
-      #my $me = {
-         #"$args->{self_alias}.id" => { -ident => "$args->{foreign_alias}.id" }
-      #};
-      #return [{
-         #"$args->{foreign_alias}.materialized_path" => {
-            #-like => \["$args->{self_alias}.materialized_path" . ' || ' . '?',
-               #[ {} => $rest ]
-            #],
-         #}
-      #}, $me ]
-   #};
+         my $path_separator = $path_info->{separator};
+         my $rest = "$path_separator%";
+
+         my $fk = $path_info->{direct_fk_column};
+         my $mp = $path_info->{materialized_path_column};
+
+         my @me = (
+            $path_info->{include_self_in_reverse_path}
+            ?  {
+               "$args->{foreign_alias}.$fk" => { -ident => "$args->{self_alias}.$fk" }
+            }
+            : ()
+         );
+         return [{
+            "$args->{foreign_alias}.$mp" => {
+               -like => \["$args->{self_alias}.$mp" . ' || ' . '?',
+                  [ {} => $rest ]
+               ],
+            }
+         }, @me ]
+      }
+   );
+}
 
 1;

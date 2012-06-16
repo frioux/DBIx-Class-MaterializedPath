@@ -58,6 +58,7 @@ sub materialized_path_columns {
          separator            => '/',
          # XXX: should we create these rels or infer from them?
          direct_relationship  => 'mom',
+         direct_reverse_relationship  => 'daughters',
          full_path            => 'maternal_lineage',
          reverse_full_path    => 'daughters',
       },
@@ -69,6 +70,7 @@ sub materialized_path_columns {
          include_self_in_reverse_path => 0,
          separator           => '.',
          direct_relationship => 'dad',
+         direct_reverse_relationship  => 'sons',
          full_path           => 'paternal_lineage',
          reverse_full_path   => 'sons',
       },
