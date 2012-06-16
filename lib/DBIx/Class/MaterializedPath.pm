@@ -66,9 +66,14 @@ sub _install_after_column_change {
          method => sub {
             my $self = shift;
 
-            my $rel = $path_info->{full_path};
+            my $rel = $path_info->{direct_reverse_relationship};
             $self->_set_materialized_path($path_info);
-            __SUB__->($_) for $self->$rel->all
+            __SUB__->($_) for $self->$rel->search({
+               # to avoid recursion
+               map +(
+                  "me.$_" => { '!=' => $self->get_column($_) },
+               ), $self->result_source->primary_columns
+            })->all
          },
       });
    }
