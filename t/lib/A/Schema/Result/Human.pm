@@ -50,6 +50,7 @@ __PACKAGE__->belongs_to(mom => 'A::Schema::Result::Human', 'mom_id');
 sub materialized_path_columns {
    return {
       mom => {
+         # XXX: we should infer these from the direct rels
          direct_column            => 'mom_id',
          direct_fk_column         => 'id',
          materialized_path_column => 'mom_path',
@@ -58,6 +59,7 @@ sub materialized_path_columns {
          separator            => '/',
          # XXX: should we create these rels or infer from them?
          direct_relationship  => 'mom',
+         # XXX: pretty sure we can infer this one too
          direct_reverse_relationship  => 'daughters',
          full_path            => 'maternal_lineage',
          reverse_full_path    => 'daughters',
