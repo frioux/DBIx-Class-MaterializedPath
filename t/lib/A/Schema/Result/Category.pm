@@ -40,15 +40,15 @@ __PACKAGE__->has_many(child_categories => 'A::Schema::Result::Category', 'parent
 sub materialized_path_columns {
    return {
       parent => {
-         direct_column            => 'parent_id',
-         direct_fk_column         => 'id',
+         parent_column            => 'parent_id',
+         parent_fk_column         => 'id',
          materialized_path_column => 'parent_path',
          include_self_in_path => 1,
          include_self_in_reverse_path => 1,
          separator            => '~',
          # XXX: should we create these rels or infer from them?
-         direct_relationship  => 'parent_category',
-         direct_reverse_relationship  => 'child_categories',
+         parent_relationship  => 'parent_category',
+         children_relationship  => 'child_categories',
          full_path            => 'ancestry',
          reverse_full_path    => 'descendants',
       },

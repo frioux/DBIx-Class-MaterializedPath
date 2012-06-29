@@ -51,28 +51,28 @@ sub materialized_path_columns {
    return {
       mom => {
          # XXX: we should infer these from the direct rels
-         direct_column            => 'mom_id',
-         direct_fk_column         => 'id',
+         parent_column            => 'mom_id',
+         parent_fk_column         => 'id',
          materialized_path_column => 'mom_path',
          include_self_in_path => 0,
          include_self_in_reverse_path => 0,
          separator            => '/',
          # XXX: should we create these rels or infer from them?
-         direct_relationship  => 'mom',
+         parent_relationship  => 'mom',
          # XXX: pretty sure we can infer this one too
-         direct_reverse_relationship  => 'daughters',
+         children_relationship  => 'daughters',
          full_path            => 'maternal_lineage',
          reverse_full_path    => 'daughters',
       },
       dad => {
-         direct_column            => 'dad_id',
-         direct_fk_column         => 'id',
+         parent_column            => 'dad_id',
+         parent_fk_column         => 'id',
          materialized_path_column => 'dad_path',
          include_self_in_path => 0,
          include_self_in_reverse_path => 0,
          separator           => '.',
-         direct_relationship => 'dad',
-         direct_reverse_relationship  => 'sons',
+         parent_relationship => 'dad',
+         children_relationship  => 'sons',
          full_path           => 'paternal_lineage',
          reverse_full_path   => 'sons',
       },

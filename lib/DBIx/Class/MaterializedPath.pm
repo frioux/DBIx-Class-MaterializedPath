@@ -36,23 +36,23 @@ sub insert {
 sub _set_materialized_path {
    my ($self, $path_info) = @_;
 
-   my $direct     = $path_info->{direct_column};
-   my $direct_fk  = $path_info->{direct_fk_column};
+   my $parent     = $path_info->{parent_column};
+   my $parent_fk  = $path_info->{parent_fk_column};
    my $path       = $path_info->{materialized_path_column};
-   my $direct_rel = $path_info->{direct_relationship};
+   my $parent_rel = $path_info->{parent_relationship};
 
    # XXX: Is this completely necesary?
    $self->discard_changes;
 
    my $path_separator = $path_info->{separator} || '/';
-   if ($self->get_column($direct)) { # if we aren't the root
+   if ($self->get_column($parent)) { # if we aren't the root
       $self->set_column($path,
-         $self->$direct_rel->get_column($path) .
+         $self->$parent_rel->get_column($path) .
             $path_separator .
-            $self->get_column($direct_fk)
+            $self->get_column($parent_fk)
       );
    } else {
-      $self->set_column($path, $self->$direct_fk );
+      $self->set_column($path, $self->$parent_fk );
    }
 
    $self->update
@@ -61,7 +61,7 @@ sub _set_materialized_path {
 sub _install_after_column_change {
    my ($self, $path_info) = @_;
 
-   for my $column (map $path_info->{$_}, qw(direct_column materialized_path_column)) {
+   for my $column (map $path_info->{$_}, qw(parent_column materialized_path_column)) {
       $self->after_column_change($column => {
          txn_wrap => 1,
 
@@ -69,7 +69,7 @@ sub _install_after_column_change {
          method => sub {
             my $self = shift;
 
-            my $rel = $path_info->{direct_reverse_relationship};
+            my $rel = $path_info->{children_relationship};
             $self->_set_materialized_path($path_info);
             __SUB__->($_) for $self->$rel->search({
                # to avoid recursion
@@ -108,7 +108,7 @@ sub _install_full_path_rel {
          my $path_separator = $path_info->{separator} || '/';
          my $rest = "$path_separator%";
 
-         my $fk = $path_info->{direct_fk_column};
+         my $fk = $path_info->{parent_fk_column};
          my $mp = $path_info->{materialized_path_column};
          my @me = (
             $path_info->{include_self_in_path}
@@ -157,7 +157,7 @@ sub _install_reverse_full_path_rel {
          my $path_separator = $path_info->{separator} || '/';
          my $rest = "$path_separator%";
 
-         my $fk = $path_info->{direct_fk_column};
+         my $fk = $path_info->{parent_fk_column};
          my $mp = $path_info->{materialized_path_column};
 
          my @me = (
