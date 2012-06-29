@@ -44,10 +44,11 @@ sub _set_materialized_path {
    # XXX: Is this completely necesary?
    $self->discard_changes;
 
+   my $path_separator = $path_info->{separator} || '/';
    if ($self->get_column($direct)) { # if we aren't the root
       $self->set_column($path,
          $self->$direct_rel->get_column($path) .
-            $path_info->{separator} .
+            $path_separator .
             $self->get_column($direct_fk)
       );
    } else {
@@ -104,7 +105,7 @@ sub _install_full_path_rel {
       sub {
          my $args = shift;
 
-         my $path_separator = $path_info->{separator};
+         my $path_separator = $path_info->{separator} || '/';
          my $rest = "$path_separator%";
 
          my $fk = $path_info->{direct_fk_column};
@@ -153,7 +154,7 @@ sub _install_reverse_full_path_rel {
       sub {
          my $args = shift;
 
-         my $path_separator = $path_info->{separator};
+         my $path_separator = $path_info->{separator} || '/';
          my $rest = "$path_separator%";
 
          my $fk = $path_info->{direct_fk_column};
