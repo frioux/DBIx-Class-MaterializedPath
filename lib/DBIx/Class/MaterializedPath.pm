@@ -36,20 +36,22 @@ sub insert {
 sub _set_materialized_path {
    my ($self, $path_info) = @_;
 
-   # TODO: populate accessors in a cache or something
    my $direct     = $path_info->{direct_column};
    my $direct_fk  = $path_info->{direct_fk_column};
    my $path       = $path_info->{materialized_path_column};
    my $direct_rel = $path_info->{direct_relationship};
 
+   # XXX: Is this completely necesary?
    $self->discard_changes;
 
-   if ($self->$direct) { # if we aren't the root
-      $self->$path(
-         $self->$direct_rel->$path . $path_info->{separator} . $self->$direct_fk
+   if ($self->get_column($direct)) { # if we aren't the root
+      $self->set_column($path,
+         $self->$direct_rel->get_column($path) .
+            $path_info->{separator} .
+            $self->get_column($direct_fk)
       );
    } else {
-      $self->$path( $self->$direct_fk );
+      $self->set_column($path, $self->$direct_fk );
    }
 
    $self->update
@@ -116,8 +118,9 @@ sub _install_full_path_rel {
                      $path_info->{include_self_in_path}
                         ||
                       $_ ne $args->{self_rowobj}->$fk
-                  # TODO: should use accessor instead of direct $mp
-                  } split qr(\Q$path_separator\E), $args->{self_rowobj}->$mp
+                  # TODO: should we use accessor instead of direct $mp?
+                  } split qr(\Q$path_separator\E), $args->{self_rowobj}
+                     ->get_column($mp)
                ]
             },
          });
