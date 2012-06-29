@@ -7,6 +7,8 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->table('category');
 
+__PACKAGE__->load_components('MaterializedPath');
+
 __PACKAGE__->add_columns(
    id => {
       data_type => 'int',
@@ -31,8 +33,6 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->set_primary_key('id');
-
-__PACKAGE__->load_components('MaterializedPath');
 
 __PACKAGE__->belongs_to(parent_category => 'A::Schema::Result::Category', 'parent_id');
 __PACKAGE__->has_many(child_categories => 'A::Schema::Result::Category', 'parent_id');
