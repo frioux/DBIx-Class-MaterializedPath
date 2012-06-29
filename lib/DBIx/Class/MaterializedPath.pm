@@ -81,6 +81,21 @@ sub _install_after_column_change {
    }
 }
 
+my %concat_operators = (
+   'DBIx::Class::Storage::DBI::MSSQL' => '+',
+);
+
+sub _get_concat {
+   my ($self, $rsrc) = @_;
+
+   my $concat;
+   for (keys %concat_operators) {
+      return $concat_operators{$_} if $rsrc->storage->isa($_)
+   }
+
+   return '||'
+}
+
 sub _install_full_path_rel {
    my ($self, $path_info) = @_;
 
@@ -101,10 +116,12 @@ sub _install_full_path_rel {
             }
             : ()
          );
+         my $concat = $self->_get_concat($args->{self_resultsource});
+
          return ([{
                "$args->{self_alias}.$mp" => {
                   # TODO: add stupid storage mapping
-                  -like => \["$args->{foreign_alias}.$mp" . ' || ' . '?',
+                  -like => \["$args->{foreign_alias}.$mp" . " $concat ?",
                      [ {} => $rest ]
                   ],
                }
@@ -149,9 +166,11 @@ sub _install_reverse_full_path_rel {
             }
             : ()
          );
+         my $concat = $self->_get_concat($args->{self_resultsource});
+
          return [{
             "$args->{foreign_alias}.$mp" => {
-               -like => \["$args->{self_alias}.$mp" . ' || ' . '?',
+               -like => \["$args->{self_alias}.$mp" . " $concat ?",
                   [ {} => $rest ]
                ],
             }
