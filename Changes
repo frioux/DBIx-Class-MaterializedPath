@@ -1,5 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.001000  2012-06-28 22:05:16 America/Chicago
   - Initial Release
 
