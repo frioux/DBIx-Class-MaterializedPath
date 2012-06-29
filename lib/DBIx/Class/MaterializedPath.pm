@@ -1,5 +1,7 @@
 package DBIx::Class::MaterializedPath;
 
+# ABSTRACT: efficiently retrieve and search trees with DBIx::Class
+
 use 5.16.0;
 use warnings;
 
