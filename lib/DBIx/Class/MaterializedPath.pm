@@ -89,14 +89,25 @@ my %concat_operators = (
 );
 
 sub _get_concat {
-   my ($self, $rsrc) = @_;
+    my ($self, $rsrc, @substrings) = @_;
 
-   my $concat;
-   for (keys %concat_operators) {
-      return $concat_operators{$_} if $rsrc->storage->isa($_)
-   }
+    my $format;
 
-   return '||'
+    if ( $rsrc->storage->isa( 'DBIx::Class::Storage::DBI::mysql' ) ) {
+        $format = q{CONCAT( %s, %s )};
+    }
+    else {
+        my $concat_operator = '||';
+        for (keys %concat_operators) {
+            if ( $rsrc->storage->isa($_) ) {
+                $concat_operator = $concat_operators{ $_ };
+            }
+        }
+        $format = qq{%s $concat_operator %s};
+    }
+
+    return sprintf $format, @substrings;
+
 }
 
 sub _install_full_path_rel {
@@ -119,12 +130,16 @@ sub _install_full_path_rel {
             }
             : ()
          );
-         my $concat = $self->_get_concat($args->{self_resultsource});
+         my $concat = $self->_get_concat(
+            $args->{self_resultsource},
+            "$args->{foreign_alias}.$mp",
+            q{?},
+         );
 
          return ([{
                "$args->{self_alias}.$mp" => {
                   # TODO: add stupid storage mapping
-                  -like => \["$args->{foreign_alias}.$mp" . " $concat ?",
+                  -like => \[$concat,
                      [ {} => $rest ]
                   ],
                }
@@ -169,11 +184,14 @@ sub _install_reverse_full_path_rel {
             }
             : ()
          );
-         my $concat = $self->_get_concat($args->{self_resultsource});
-
+         my $concat = $self->_get_concat(
+            $args->{self_resultsource},
+            "$args->{self_alias}.$mp",
+            q{?},
+         );
          return [{
             "$args->{foreign_alias}.$mp" => {
-               -like => \["$args->{self_alias}.$mp" . " $concat ?",
+               -like => \[$concat,
                   [ {} => $rest ]
                ],
             }
