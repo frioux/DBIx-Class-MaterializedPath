@@ -58,4 +58,17 @@ cmp_set(
    'red shirt has correctly updated ancestry'
 );
 
+is(
+   $shirts->descendants->count,
+   1 + 1 + 2, # shirt -> tshirt -> ( woot_shirt, red_shirt )
+   'shirt has the correct number of descendants (plus itself)',
+);
+
+is (
+   $red_shirt->ancestry->count,
+   4,
+   'red shirt has the correct number of ancestors (plus itself)',
+);
+
+
 done_testing;
