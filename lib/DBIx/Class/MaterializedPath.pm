@@ -6,7 +6,6 @@ use warnings;
 
 use base 'DBIx::Class::Helper::Row::OnColumnChange';
 
-use Sub::Current;
 use English;
 
 use Class::C3::Componentised::ApplyHooks
@@ -65,33 +64,25 @@ sub _set_materialized_path {
 sub _install_after_column_change {
    my ($self, $path_info) = @_;
 
+   my $method;
+
+   if ( $PERL_VERSION >= 5.016 ) {
+       # Use the __SUB__ builtin for a certain recursive maneuver we'll perform later.
+       require DBIx::Class::MaterializedPath::NativeRecursion;
+   }
+   else {
+       # This Perl's too old for __SUB__. Use the Sub::Current CPAN module, instead.
+       require DBIx::Class::MaterializedPath::SubCurrentRecursion;
+   }
+
+   $method = $self->_get_column_change_method( $path_info );
+
    for my $column (map $path_info->{$_}, qw(parent_column materialized_path_column)) {
       $self->after_column_change($column => {
          txn_wrap => 1,
 
          # XXX: is it worth installing this?
-         method => sub {
-            my $self = shift;
-
-            my $rel = $path_info->{children_relationship};
-            $self->_set_materialized_path($path_info);
-            if ( $PERL_VERSION < 5.016 ) {
-                ROUTINE->($_) for $self->$rel->search({
-                   # to avoid recursion
-                   map +(
-                    "me.$_" => { '!=' => $self->get_column($_) },
-                 ), $self->result_source->primary_columns
-              })->all
-            }
-            else {
-                __SUB__->($_) for $self->$rel->search({
-                   # to avoid recursion
-                   map +(
-                      "me.$_" => { '!=' => $self->get_column($_) },
-                   ), $self->result_source->primary_columns
-                })->all
-            }
-         },
+         method => $method,
       });
    }
 }
