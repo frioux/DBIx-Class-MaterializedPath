@@ -1,6 +1,9 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+  - Add support for non-5.16 Perls (Jason McIntosh)
+  - Add MySQL Compatibility (|| is not supported by default as concat)
+      (Jason McIntosh)
 
 0.001001  2012-11-17 17:07:03 CST6CDT
   - Put MetaYAML back in dist
