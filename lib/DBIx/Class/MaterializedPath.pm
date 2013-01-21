@@ -100,6 +100,7 @@ sub _get_concat {
       for (keys %concat_operators) {
          if ($rsrc->storage->isa($_)) {
             $concat_operator = $concat_operators{ $_ };
+            last
          }
       }
       $format = qq{%s $concat_operator %s};
