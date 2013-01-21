@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.002000  2013-01-21 15:30:32 CST6CDT
   - Add support for non-5.16 Perls (Jason McIntosh)
   - Add MySQL Compatibility (|| is not supported by default as concat)
       (Jason McIntosh)
