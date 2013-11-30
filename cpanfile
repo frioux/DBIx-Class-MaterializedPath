@@ -1,4 +1,7 @@
 requires 'DBIx::Class' => 0.08196;
+requires 'DBIx::Introspector';
+requires 'Module::Runtime';
+requires 'Try::Tiny';
 requires 'DBIx::Class::Helpers' => 2.007004;
 requires 'Class::C3::Componentised' => 1.001000;
 requires 'SQL::Translator' => 0.11011;
