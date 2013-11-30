@@ -5,6 +5,8 @@ package DBIx::Class::MaterializedPath;
 use strict;
 use warnings;
 
+use Module::Runtime 'use_module';
+
 use base 'DBIx::Class::Helper::Row::OnColumnChange';
 
 use English;
@@ -89,23 +91,26 @@ my %concat_operators = (
    'DBIx::Class::Storage::DBI::MSSQL' => '+',
 );
 
+sub _introspector {
+   my $d = use_module('DBIx::Introspector')->new;
+
+   $d->decorate_driver(DBI       => concat_sql => sub { '%s || %s' });
+   $d->decorate_driver(SQLServer => concat_sql => sub { '%s + %s' });
+   $d->decorate_driver(mysql     => concat_sql => sub { 'CONCAT( %s, %s )' });
+
+   $d
+}
+
+my $d;
 sub _get_concat {
    my ($self, $rsrc, @substrings) = @_;
 
-   my $format;
+   my $storage = $self->result_source->storage;
+   $storage->ensure_connected;
 
-   if ($rsrc->storage->isa('DBIx::Class::Storage::DBI::mysql')) {
-      $format = q{CONCAT( %s, %s )};
-   } else {
-      my $concat_operator = '||';
-      for (keys %concat_operators) {
-         if ($rsrc->storage->isa($_)) {
-            $concat_operator = $concat_operators{ $_ };
-            last
-         }
-      }
-      $format = qq{%s $concat_operator %s};
-   }
+   $d ||= $self->_introspector;
+
+   my $format = $d->get($storage->dbh, undef, 'concat_sql');
 
    return sprintf $format, @substrings;
 }
