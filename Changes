@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+  - Ditch RT
 
 0.002000  2013-01-21 15:30:32 CST6CDT
   - Add support for non-5.16 Perls (Jason McIntosh)
