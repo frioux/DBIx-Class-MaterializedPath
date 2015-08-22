@@ -10,6 +10,7 @@ use Try::Tiny;
 use base 'DBIx::Class::Helper::Row::OnColumnChange';
 
 use English;
+use B::Hooks::EndOfScope;
 
 use Class::C3::Componentised::ApplyHooks
    -before_apply => sub {
@@ -17,12 +18,15 @@ use Class::C3::Componentised::ApplyHooks
          unless $_[0]->can('materialized_path_columns')
    },
    -after_apply => sub {
-      my %mat_paths = %{$_[0]->materialized_path_columns};
+      my $self = shift;
+      on_scope_end {
+         my %mat_paths = %{$self->materialized_path_columns};
 
-      for my $path (keys %mat_paths) {
-         $_[0]->_install_after_column_change($mat_paths{$path});
-         $_[0]->_install_full_path_rel($mat_paths{$path});
-         $_[0]->_install_reverse_full_path_rel($mat_paths{$path});
+         for my $path (keys %mat_paths) {
+            $self->_install_after_column_change($mat_paths{$path});
+            $self->_install_full_path_rel($mat_paths{$path});
+            $self->_install_reverse_full_path_rel($mat_paths{$path});
+         }
       }
    };
 
